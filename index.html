@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Abhinav Project-1</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+	<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+	<style>
+		svg .street_line {
+			stroke: green;
+			stroke-width: 0.2px;
+			fill: none;
+		}
+		
+		
+		svg .pump_map {
+			fill: darkred;
+			stroke: none;
+		}
+		
+		svg .street_name {
+			font-family: 'Poppins';
+			fill: black;
+		}
+		
+		svg .show_death {
+			stroke: none;
+			r: 2;
+		}
+		
+		svg .graph_line {
+			fill: none;
+			stroke-width: 1.5px;
+		}
+		
+		svg .graph_hover:hover {
+			fill-opacity: 0.2;
+		}
+		
+		svg .graph_button {
+			rx: 5;
+			ry: 5;
+			stroke: none;
+		}
+		
+		svg .label_graph_button {
+			font-family: 'Poppins';
+			font-size: 15px;
+		}
+		
+		.axis path,
+		.axis line {
+			fill: none;
+			stroke: black;
+			shape-rendering: crispEdges;
+		}
+
+		.axis text {
+			font-family: 'Poppins';
+			font-size: 10px;
+			fill: black;
+		}
+		
+	</style>
+</head>
+<body>
+	<div>
+		<table class="table">
+			<tr>
+				<th>
+					Project_1_Dr. John Snow's map using D3
+				</th>
+				<th>
+					H517 Visualization Design, Analysis and Evaluation
+				</th>
+			</tr>
+			<tr>
+				<td align="justify" width="50%">
+						Dr. John Snow's map of London's 1854 cholera epidemic was a true master piece. It was the first time that anyone had established a link between contaminated water and cholera. The visualization provided compelling evidence and made the case for public health policies to improve water sanitation. Below is the visualization of the map using d3_v3	</td>
+				<td>
+	Video Link : <a href="https://youtu.be/7QcqBXvQaKA">Click here</a><br>
+	Documentation: <a href="https://abhinavsikharam.github.io/Project-1-Documentation/">Click here</a><br>
+			</td>
+			</tr>
+
+		</table>
+		<!--Buttons to show total, age wise, gender wise deaths-->
+		<div style="margin-left:500px">
+			<button type="button" class="btn btn-info btn-lg" onclick="showTotal()">Total Deaths</button>
+			<button type="button" class="btn btn-info btn-lg" style="background:#10002b" onclick="showAgeBased()">Age based</button>
+			<button type="button" class="btn btn-info btn-lg" style="background:#ef476f" onclick="showGenderBased()">Gender based</button>
+		</div>
+		<br>
+		<!-- Show Graph -->
+			<svg id="graph" width="49%" viewBox="0 -10 500 500">	
+				<text id="label" style="font-size:11px" x='0' y='20'>No of deaths</text>
+				<text id="label" style="font-size:7px" x='335' y='-5'>click on circle(s) to unselect</text>
+				<text id="label" style="font-size:11px" x='200' y='460'>Days</text>
+			</svg>	
+			<!-- Show Map -->
+			<svg id="map" width="49%" viewBox="0 0 500 500">
+					<text id="label" style="font-size:11px" x='10' y='20'>Dots represent deaths and Squares represent pumps</text>
+			</svg>
+		</div>
+
+	
+	<script type="text/javascript">
+		const map_size = 450;
+		let spacing = 30;
+	
+		let map = d3.select("svg#map");
+		let map_width = map_size;
+		let map_height = map_size;
+		
+		let map_x_scale = d3.scale.linear();
+		let map_y_scale = d3.scale.linear();
+		
+		let button_height = 30;
+		let button_padding = 10;
+		
+		let graph = d3.select("svg#graph");
+		
+		let graph_width = map_size;
+		let graph_height = map_size;
+
+		let graph_x = d3.scale.linear();
+		let graph_y = d3.scale.linear();
+		
+		let button_width = (graph_width - 4 * button_padding) / 3;
+		let keyButtonWidth = button_width / 2;
+	
+		let male_fade = 1;
+		let female_fade = 1;
+		
+		let ages_range = [
+			{
+				label: '0-10',
+				opacity: 1,
+				color: '#c77dff'
+			},
+			{
+				label: '11-20',
+				opacity: 1,
+				color: '#9d4edd'
+			},
+			{
+				label: '21-40',
+				opacity: 1,
+				color: '#7b2cbf'
+			},
+			{
+				label: '41-60',
+				opacity: 1,
+				color: '#5a189a'
+			},
+			{
+				label: '61-80',
+				opacity: 1,
+				color: '#3c096c'
+			},
+			{
+				label: '> 80',
+				opacity: 1,
+				color: '#240046'
+			}
+		];
+		
+		let streets_data = [];
+		let pumps_data = [];
+		let street_names = [];
+		let days_of_deaths = [];
+		let deaths = [];
+		let max_deaths = 0;
+		
+		//To reset all values
+		function empty() {
+			map.selectAll('.show_death')
+				.attr('fill','none')
+				.attr('fill-opacity', 1);
+				
+			graph.selectAll('.graph_line')
+				.attr('stroke','none')
+				.attr('stroke-opacity',1);
+				
+			graph.selectAll('.graph_key_button')
+				.attr('visibility','hidden')
+				.attr('fill-opacity', 1);
+				
+			male_fade = 1;
+			female_fade = 1;
+			
+			for (let i=0; i < ages_range.length; i++) {
+				ages_range[i].opacity = 1;
+			}
+		}
+		
+		// total deaths function to display on map and graph
+		function showTotal() {
+			empty();
+			
+			map.selectAll('.show_death').attr('fill','#118ab2');
+				
+			graph.select('#total_graph_line')
+				.attr('stroke','#118ab2')
+				
+				.attr('opacity','1');
+		}
+		
+		// function to display gender wise deaths on map and graph
+		function showGenderBased() {
+			empty();
+			
+			map.selectAll('.male').attr('fill','blue');
+			map.selectAll('.female').attr('fill','#ef476f');
+			
+			graph.select('#graphline_male').attr('stroke','blue');
+			graph.select('#graphline_female').attr('stroke','#ef476f');
+			
+			graph.select('#button_male').attr('visibility','visible');
+			graph.select('#button_male_label').attr('visibility','visible');
+			graph.select('#button_female').attr('visibility','visible');
+			graph.select('#button_female_label').attr('visibility','visible');
+		}
+		
+		// function to display ages wise deaths on map and graph
+		function showAgeBased() {
+			empty();
+			
+			for (let i=0; i < ages_range.length; i++) {
+				map.selectAll('.age' + i)
+					.attr('fill', ages_range[i].color);
+				graph.select('#graphline_age' + i)
+					.attr('stroke', ages_range[i].color);
+				graph.select('#button_age' + i)
+					.attr('visibility','visible');
+				graph.select('#button_age_label' + i)
+					.attr('visibility','visible');
+			}
+		}
+		
+		
+		function deathsMap() {
+			map.selectAll('.show_death')
+				.data(deaths)
+				.enter()
+				.append('circle')
+				.attr('id', function(d,i) { return "show_death" + i; })
+				.attr('class', function(d) {
+					return "show_death " +
+						d.gender + " " +
+						"age" + d.age + " " +
+						"deathday" + d.deathday;
+				})
+				.attr('cx', function(d) { return map_x_scale(d.x); })
+				.attr('cy', function(d) { return map_y_scale(d.y); })
+				.attr('fill','none')
+				.append("title") // tooltip data hovered on circle
+				.text(function(d) {
+					return d.gender + "\r\n" +
+						"age " + ages_range[d.age].label + "\r\n" +
+						"died " + d.deathdate;
+				});
+		}
+		
+		
+		function deathsGraphLines() {
+		
+
+			let graphTotalPathGenerator = d3.svg.line()
+			
+			graph.selectAll('#total_graph_line')
+			.data(days_of_deaths)
+			.enter()
+			.append("rect")
+			.attr("x", function(d) { return graph_x(d.day); })
+			.attr("y", function(d) { return graph_y(d.total); })
+			.attr("width", 3) // width of bar
+			
+			.attr("height", function(d) { return graph_height - graph_y(d.total)-spacing; })
+			.attr("fill", "#90e0ef") // color of bar
+			
+	
+			// male line
+			let graphMalePathGenerator = d3.svg.line()
+				.x(function(d) { return graph_x(d.day); })
+				.y(function(d) { return graph_y(d.male); });
+				
+			graph.append('path')
+				.attr('id', 'graphline_male')
+				.attr('class', 'graph_line male')
+				.attr('d', graphMalePathGenerator(days_of_deaths));
+
+
+			// female line
+			let graphFemalePathGenerator = d3.svg.line()
+				.x(function(d) { return graph_x(d.day); })
+				.y(function(d) { return graph_y(d.female); });
+
+			graph.append('path')
+				.attr('id', 'graphline_female')
+				.attr('class', 'graph_line female')
+				.attr('d', graphFemalePathGenerator(days_of_deaths));
+
+			//ages lines
+			for (let i=0; i < ages_range.length; i++) {
+				let graphPathGenerator = d3.svg.line()
+					.x(function(d) { return graph_x(d.day); })
+					.y(function(d) { return graph_y(d.age[i]); });
+
+				graph.append('path')
+					.attr('id', 'graphline_age' + i)
+					.attr('class', 'graph_line age' + i)
+					.attr('d', graphPathGenerator(days_of_deaths));
+			}
+		}
+		
+		
+		function deathsGraph() { // hover bar logic
+
+		
+			let hoverbarWidth = graph_width / (days_of_deaths.length - 1);
+
+			graph.selectAll("rect.graph_hover")
+				.data(days_of_deaths)
+				.enter()
+				.append("rect")
+				.attr("x", function(d, i) {
+					return graph_x(i) - hoverbarWidth / 2;
+				})
+				.attr("y", spacing)
+				.attr('width', hoverbarWidth)
+				.attr("height", graph_height - spacing * 2)
+				.attr("fill", "grey") // color of hover bar
+				.attr("fill-opacity", "0")
+				.attr("stroke", "none")
+				.attr("stroke-width", "0")
+				.attr("id", function(d) { return d.deathdate; })
+				.attr("class", "graph_hover")
+				.on("mouseover", function(d) {
+					d3.selectAll('.show_death')
+						.filter(function(d2) {
+							return d2.deathday > d.day;
+						})
+						.attr('visibility','hidden');
+				})
+				.on("mouseout", function(d) {
+					map.selectAll(".show_death").attr("visibility","visible");
+				})
+				.append("title")
+				.text(function(d) {
+					return d.deathdate + ": " + d.total + 
+						(d.total==1 ? " death" : " deaths");
+				});
+				
+			
+			let xAxis = d3.svg.axis()
+				.scale(graph_x)
+				.orient('bottom')
+				.tickFormat(function(d) {
+					return days_of_deaths[d].deathdate;
+				});
+
+			let yAxis = d3.svg.axis()
+				.scale(graph_y)
+				.orient('left');
+
+			graph.append('g')
+				.attr('class', 'axis')
+				.attr('transform', 'translate(0,' + (graph_height - spacing) + ')')
+				.call(xAxis);
+
+			graph.append('g')
+				.attr('class', 'axis')
+				.attr('transform', 'translate(' + spacing + ',0)')
+				.call(yAxis);
+				
+			
+			let buttonLabelYAdjust = 5;
+			
+			// Total Deaths
+			graph.append('title')
+			.text("Days")
+				
+				.attr("x", button_padding)
+				.attr("y", graph_height + button_padding)
+				.attr("width", button_width)
+				.attr("height", button_height)
+				.attr("fill", "black")
+			
+				
+			//  Gender Wise Male Key
+			graph.append('circle')
+				.attr('id', 'button_male')
+				.attr('class', 'graph_button graph_key_button male')
+				.attr("cx", graph_width - (keyButtonWidth + button_padding))
+				.attr("cy", button_padding)
+				.attr("r",10)
+				.attr("fill", "blue")
+				.on('click', function(d) {
+					male_fade = (male_fade == 1 ? .2 : 1);
+					d3.selectAll('.male').attr('fill-opacity', male_fade);
+					d3.selectAll('.male').attr('stroke-opacity', male_fade);
+				});
+			graph.append('text')
+				.attr('id', 'button_male_label')
+				.attr('class', 'label_graph_button graph_key_button')
+				.text('Male')
+				.attr('x', graph_width - (keyButtonWidth / 2 + button_padding))
+				.attr('y', button_padding + button_height / 12 + 
+					buttonLabelYAdjust)
+				.attr('text-anchor','middle')
+				.attr('fill', 'blue')
+				.style('pointer-events','none');
+				
+			//  Gender Wise Female Key
+			graph.append('circle')
+				.attr('id', 'button_female')
+				.attr('class', 'graph_button graph_key_button female')
+				.attr("cx", graph_width - (keyButtonWidth + button_padding))
+				.attr("cy", button_padding * 2 + button_height)
+				.attr("r",10)
+				.attr("fill", "#ef476f")
+				.on('click', function(d) {
+					female_fade = (female_fade == 1 ? .2 : 1);
+					d3.selectAll('.female').attr('fill-opacity', female_fade);
+					d3.selectAll('.female').attr('stroke-opacity', female_fade);
+				});
+			graph.append('text')
+				.attr('id', 'button_female_label')
+				.attr('class', 'label_graph_button graph_key_button')
+				.text('Female')
+				.attr('x', graph_width - (keyButtonWidth / 3 + button_padding))
+				.attr('y', button_padding  + button_height * 1.4+ 
+					buttonLabelYAdjust)
+				.attr('text-anchor','middle')
+				.attr('fill', '#ef476f')
+				.style('pointer-events','none');
+
+			// By Age Key Buttons
+			for (let i=0; i < ages_range.length; i++) {
+				graph.append('circle')
+					.attr('id', 'button_age' + i)
+					.attr('class', 'graph_button graph_key_button age' + i)
+					.attr("cx", graph_width - (keyButtonWidth + button_padding))
+					.attr("cy", button_padding * (i + 1) + button_height * i)
+					.attr("r",10)
+					.attr("fill", ages_range[i].color)
+					.on('click', function(d) {
+						ages_range[i].opacity = (ages_range[i].opacity == 1 ? .1 : 1);
+						d3.selectAll('.age' + i)
+							.attr('fill-opacity', ages_range[i].opacity);
+						d3.selectAll('.age' + i)
+							.attr('stroke-opacity', ages_range[i].opacity);
+					});
+				graph.append('text')
+					.attr('id', 'button_age_label' + i)
+					.attr('class', 'label_graph_button graph_key_button')
+					.text(ages_range[i].label)
+					.attr('x', graph_width - (keyButtonWidth / 2 + button_padding))
+					.attr('y', button_padding * (i + 1) +
+						button_height * i + button_height / 10 +
+						buttonLabelYAdjust)
+					.attr('text-anchor','middle')
+					.attr('fill', 'black')
+					.style('pointer-events','none');
+			}
+		}		
+		
+		// Get deaths data and show on map and graph
+		function getDeaths() {
+		
+			d3.csv("deaths_age_sex.csv", function(data) {
+				for (let i=0; i < data.length; i++) {
+					deaths.push(
+						{
+							x: data[i].x,
+							y: data[i].y,
+							age: +data[i].age,
+							gender: +data[i].gender==0 ? "male" : "female"
+						}
+					);
+				}
+
+				d3.csv("deathdays.csv", function(data) {
+					let deathId = 0;
+					for (let day = 0; day < data.length; day++) {
+					
+						let totalCount = +data[day].deaths; // totalCount = totalCount + data[day].deaths
+						let maleCount = 0;
+						let femaleCount = 0;
+						let ageCount = [0,0,0,0,0,0];
+						
+						
+						 //no of deaths on Y axis
+						if (max_deaths < totalCount) {
+							max_deaths = totalCount;
+						}
+						
+						for (let i=0; i < totalCount; i++) {
+							// modify each death data with the day and date.
+							deaths[deathId].deathday = day;
+							deaths[deathId].deathdate = data[day].date;
+							
+							// Count the no of deaths on each death day.
+							if (deaths[deathId].gender == "male") {
+								maleCount++;
+							} else {
+								femaleCount++;
+							}
+							ageCount[deaths[deathId].age]++;
+							deathId++;
+						}
+						
+						days_of_deaths.push ({  // push data loaded from csv files to the required format
+							day: day,
+							deathdate: data[day].date,
+							total: totalCount,
+							male: maleCount,
+							female: femaleCount,
+							age: ageCount
+						});
+						
+					}
+
+					graph_x.domain([0, days_of_deaths.length-1])
+						.range([spacing, graph_width - spacing]);
+						
+					graph_y.domain([0, max_deaths])
+						.range([graph_height - spacing, spacing]);
+						
+					deathsMap(); // show deaths on map (circles)
+
+					deathsGraphLines(); // plot lines on graph
+					
+					deathsGraph(); // show deaths on graph
+					
+					showTotal(); // show total
+				});
+				
+			});
+		}
+
+		
+		function showPumps() { // Get pumps data from pumps.csv and display pumps on map
+			const pumpSize = 10;
+		
+			d3.csv("pumps.csv", function(data) {
+				for (let i=0; i < data.length; i++) {
+					pumps_data.push(
+						{x: data[i].x, y: data[i].y}
+					);
+				}
+				
+				map.selectAll('.pump_map')
+					.data(pumps_data)
+					.enter()
+					.append('rect')
+					.attr('class', 'pump_map')
+					.attr('width', pumpSize)
+					.attr('height', pumpSize)
+					.attr('x', function(d) { return map_x_scale(d.x) - pumpSize / 2; })
+					.attr('y', function(d) { return map_y_scale(d.y) - pumpSize / 2; })
+					
+			});
+		}
+		
+		
+		function showStreetNames() {     // Retrieve street names from csv file and plot on map
+			d3.csv("street_names.csv", function(data) {
+				for (let i=0; i < data.length; i++) {
+					street_names.push({
+						x: data[i].x,
+						y: data[i].y,
+						text: data[i].text,
+						fontsize: data[i].fontsize,
+						angle: data[i].angle
+					});
+				}
+				
+				map.selectAll('.street_name')
+					.data(street_names)
+					.enter()
+					.append('text')
+					.attr('class', 'street_name')
+					.attr('x', function(d) { return d.x; })
+					.attr('y', function(d) { return d.y; })
+					.attr('font-size', function(d) { return d.fontsize; })
+					.text(function(d) { return d.text; })
+					.attr('transform', function(d) {
+						return 'rotate(' + d.angle + ',' +
+							d.x + ',' + d.y + ')';
+					});
+			});
+		}
+		
+		let lineFunction = d3.svg.line() // plot street lines using streets.json on map
+			.x(function(d) { return map_x_scale(d.x); })
+			.y(function(d) { return map_y_scale(d.y); })
+			.interpolate("linear");
+		
+		
+		d3.json("streets.json", function(data) {
+			streets_data = data;
+		
+			map_x_scale.domain([3,20]).range([0, map_width]);
+			map_y_scale.domain([3,20]).range([map_height, 0]);
+
+			
+			for (let i=0; i < streets_data.length; i++) {
+				map.append("path")
+					.attr("d", lineFunction(streets_data[i]))
+					.attr("class", "street_line");
+			}
+			
+			showStreetNames(); // display street names
+			showPumps(); // display pumps
+			getDeaths(); // 
+		});
+				
+	</script>
+</body>
+
+
+</html>
