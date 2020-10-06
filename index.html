@@ -11,50 +11,40 @@
 			stroke-width: 0.2px;
 			fill: none;
 		}
-		
-		
 		svg .pump_map {
 			fill: darkred;
 			stroke: none;
 		}
-		
 		svg .street_name {
 			font-family: 'Poppins';
 			fill: black;
 		}
-		
 		svg .show_death {
 			stroke: none;
 			r: 2;
 		}
-		
 		svg .graph_line {
 			fill: none;
 			stroke-width: 1.5px;
 		}
-		
 		svg .graph_hover:hover {
 			fill-opacity: 0.2;
 		}
-		
 		svg .graph_button {
 			rx: 5;
 			ry: 5;
 			stroke: none;
 		}
-		
 		svg .label_graph_button {
 			font-family: 'Poppins';
 			font-size: 15px;
 		}
-		
 		.axis path,
 		.axis line {
 			fill: none;
 			stroke: black;
 			shape-rendering: crispEdges;
 		}
-
 		.axis text {
 			font-family: 'Poppins';
 			font-size: 10px;
@@ -105,32 +95,15 @@
 
 	
 	<script type="text/javascript">
-		const map_size = 450;
-		let spacing = 30;
-	
-		let map = d3.select("svg#map");
-		let map_width = map_size;
-		let map_height = map_size;
-		
+		const map_size = 450; let spacing = 30; let map = d3.select("svg#map"); let map_width = map_size;let map_height = map_size;
 		let map_x_scale = d3.scale.linear();
 		let map_y_scale = d3.scale.linear();
-		
-		let button_height = 30;
-		let button_padding = 10;
-		
-		let graph = d3.select("svg#graph");
-		
-		let graph_width = map_size;
-		let graph_height = map_size;
-
+		let button_height = 30; let button_padding = 10;
+		let graph = d3.select("svg#graph"); let graph_width = map_size; let graph_height = map_size;
 		let graph_x = d3.scale.linear();
 		let graph_y = d3.scale.linear();
-		
 		let button_width = (graph_width - 4 * button_padding) / 3;
-		let keyButtonWidth = button_width / 2;
-	
-		let male_fade = 1;
-		let female_fade = 1;
+		let keyButtonWidth = button_width / 2; let male_fade = 1; let female_fade = 1;
 		
 		let ages_range = [
 			{
@@ -165,12 +138,7 @@
 			}
 		];
 		
-		let streets_data = [];
-		let pumps_data = [];
-		let street_names = [];
-		let days_of_deaths = [];
-		let deaths = [];
-		let max_deaths = 0;
+		let streets_data = []; let pumps_data = []; let street_names = []; let days_of_deaths = []; let deaths = []; let max_deaths = 0;
 		
 		//To reset all values
 		function empty() {
