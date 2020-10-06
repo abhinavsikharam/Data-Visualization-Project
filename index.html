@@ -6,51 +6,17 @@
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
 	<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
 	<style>
-		svg .street_line {
-			stroke: green;
-			stroke-width: 0.2px;
-			fill: none;
-		}
-		svg .pump_map {
-			fill: darkred;
-			stroke: none;
-		}
-		svg .street_name {
-			font-family: 'Poppins';
-			fill: black;
-		}
-		svg .show_death {
-			stroke: none;
-			r: 2;
-		}
-		svg .graph_line {
-			fill: none;
-			stroke-width: 1.5px;
-		}
-		svg .graph_hover:hover {
-			fill-opacity: 0.2;
-		}
-		svg .graph_button {
-			rx: 5;
-			ry: 5;
-			stroke: none;
-		}
-		svg .label_graph_button {
-			font-family: 'Poppins';
-			font-size: 15px;
-		}
+		svg .street_line { stroke: green; stroke-width: 0.2px; fill: none;}
+		svg .pump_map { fill: darkred; stroke: none;}
+		svg .street_name {font-family: 'Poppins'; fill: black;}
+		svg .show_death {stroke: none; r: 2;}
+		svg .graph_line {fill: none; stroke-width: 1.5px;}
+		svg .graph_hover:hover {fill-opacity: 0.2;}
+		svg .graph_button {rx: 5; ry: 5; stroke: none;}
+		svg .label_graph_button {font-family: 'Poppins'; font-size: 15px;}
 		.axis path,
-		.axis line {
-			fill: none;
-			stroke: black;
-			shape-rendering: crispEdges;
-		}
-		.axis text {
-			font-family: 'Poppins';
-			font-size: 10px;
-			fill: black;
-		}
-		
+		.axis line {fill: none; stroke: black; shape-rendering: crispEdges;}
+		.axis text {font-family: 'Poppins'; font-size: 10px; fill: black;}
 	</style>
 </head>
 <body>
@@ -95,74 +61,24 @@
 
 	
 	<script type="text/javascript">
-		const map_size = 450; let spacing = 30; let map = d3.select("svg#map"); let map_width = map_size;let map_height = map_size;
-		let map_x_scale = d3.scale.linear();
-		let map_y_scale = d3.scale.linear();
-		let button_height = 30; let button_padding = 10;
-		let graph = d3.select("svg#graph"); let graph_width = map_size; let graph_height = map_size;
-		let graph_x = d3.scale.linear();
-		let graph_y = d3.scale.linear();
-		let button_width = (graph_width - 4 * button_padding) / 3;
-		let keyButtonWidth = button_width / 2; let male_fade = 1; let female_fade = 1;
-		
-		let ages_range = [
-			{
-				label: '0-10',
-				opacity: 1,
-				color: '#c77dff'
-			},
-			{
-				label: '11-20',
-				opacity: 1,
-				color: '#9d4edd'
-			},
-			{
-				label: '21-40',
-				opacity: 1,
-				color: '#7b2cbf'
-			},
-			{
-				label: '41-60',
-				opacity: 1,
-				color: '#5a189a'
-			},
-			{
-				label: '61-80',
-				opacity: 1,
-				color: '#3c096c'
-			},
-			{
-				label: '> 80',
-				opacity: 1,
-				color: '#240046'
-			}
-		];
-		
+		const map_size = 450; let spacing = 30; let map = d3.select("svg#map"); let map_width = map_size;let map_height = map_size; 
+		let map_x_scale = d3.scale.linear(); let map_y_scale = d3.scale.linear(); let button_height = 30; let button_padding = 10;
+		let graph = d3.select("svg#graph"); let graph_width = map_size; let graph_height = map_size; let graph_x = d3.scale.linear();
+		let graph_y = d3.scale.linear(); let button_width = (graph_width - 4 * button_padding) / 3; let keyButtonWidth = button_width / 2; let male_fade = 1; let female_fade = 1;
+		let ages_range = [{label: '0-10', opacity: 1, color: '#c77dff'}, {label: '11-20', opacity: 1, color: '#9d4edd'}, {label: '21-40', opacity: 1, color: '#7b2cbf'}, {label: '41-60', opacity: 1, color: '#5a189a'}, {label: '61-80', opacity: 1, color: '#3c096c'}, {label: '> 80', opacity: 1, color: '#240046'}];
 		let streets_data = []; let pumps_data = []; let street_names = []; let days_of_deaths = []; let deaths = []; let max_deaths = 0;
-		
-		//To reset all values
-		function empty() {
-			map.selectAll('.show_death')
-				.attr('fill','none')
-				.attr('fill-opacity', 1);
-				
-			graph.selectAll('.graph_line')
-				.attr('stroke','none')
-				.attr('stroke-opacity',1);
-				
-			graph.selectAll('.graph_key_button')
-				.attr('visibility','hidden')
-				.attr('fill-opacity', 1);
-				
-			male_fade = 1;
-			female_fade = 1;
-			
-			for (let i=0; i < ages_range.length; i++) {
-				ages_range[i].opacity = 1;
-			}
-		}
-		
-		// total deaths function to display on map and graph
+		function empty() 
+		{map.selectAll('.show_death')
+			.attr('fill','none')
+			.attr('fill-opacity', 1);
+		graph.selectAll('.graph_line')
+			.attr('stroke','none')
+			.attr('stroke-opacity',1);
+		graph.selectAll('.graph_key_button')
+			.attr('visibility','hidden')
+			.attr('fill-opacity', 1);
+		male_fade = 1; female_fade = 1;
+		for (let i=0; i < ages_range.length; i++) {ages_range[i].opacity = 1;}}
 		function showTotal() {
 			empty();
 			
