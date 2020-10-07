@@ -219,7 +219,7 @@
 				.on('click', function(d) { ages_range[i].opacity = (ages_range[i].opacity == 1 ? .1 : 1); 
 				d3.selectAll('.age' + i) .attr('fill-opacity', ages_range[i].opacity);
 				d3.selectAll('.age' + i) .attr('stroke-opacity', ages_range[i].opacity); });
-				graph.append('text')
+			graph.append('text')
 				.attr('id', 'button_age_label' + i)
 				.attr('class', 'label_graph_button graph_key_button')
 				.text(ages_range[i].label)
@@ -228,29 +228,90 @@
 				.attr('text-anchor','middle')
 				.attr('fill', 'black')
 				.style('pointer-events','none'); }}	
-		// Getting deaths data from deaths_age_sex.csv and display deaths on map
-		function getDeaths() { d3.csv("deaths_age_sex.csv", function(data) for (let i=0; i < data.length; i++) 
-				{deaths.push({x: data[i].x, y: data[i].y, age: +data[i].age, gender: +data[i].gender==0 ? "male" : "female"});}
-				d3.csv("deathdays.csv", function(data) {let deathId = 0; for (let day = 0; day < data.length; day++) 
-				{let totalCount = +data[day].deaths; let maleCount = 0; let femaleCount = 0; let ageCount = [0,0,0,0,0,0];
-			 	if (max_deaths < totalCount) { max_deaths = totalCount;}
-				for (let i=0; i < totalCount; i++) { deaths[deathId].deathday = day; deaths[deathId].deathdate = data[day].date;
-				if (deaths[deathId].gender == "male") { maleCount++; } else { femaleCount++; }
-				ageCount[deaths[deathId].age]++;
-				deathId++;}
-		days_of_deaths.push ({ day: day, deathdate: data[day].date, total: totalCount, male: maleCount, female: femaleCount, age: ageCount });}
-			graph_x.domain([0, days_of_deaths.length-1])
-			.range([spacing, graph_width - spacing]);
-			graph_y.domain([0, max_deaths])
-			.range([graph_height - spacing, spacing]);
-			deathsMap(); // show deaths on map (circles)
-			deathsGraphLines(); // plot lines on graph
-			deathsGraph(); // show deaths on graph
-			showTotal(); // show total
-			});});}
-		// Getting pumps data from pumps.csv and display pumps on map
-		function showPumps() { const pumpSize = 10; d3.csv("pumps.csv", function(data) { for (let i=0; i < data.length; i++) 
-			{ pumps_data.push( {x: data[i].x, y: data[i].y});}
+		// Get deaths data and show on map and graph
+		function getDeaths() {
+		
+			d3.csv("deaths_age_sex.csv", function(data) {
+				for (let i=0; i < data.length; i++) {
+					deaths.push(
+						{
+							x: data[i].x,
+							y: data[i].y,
+							age: +data[i].age,
+							gender: +data[i].gender==0 ? "male" : "female"
+						}
+					);
+				}
+
+				d3.csv("deathdays.csv", function(data) {
+					let deathId = 0;
+					for (let day = 0; day < data.length; day++) {
+					
+						let totalCount = +data[day].deaths; // totalCount = totalCount + data[day].deaths
+						let maleCount = 0;
+						let femaleCount = 0;
+						let ageCount = [0,0,0,0,0,0];
+						
+						
+						 //no of deaths on Y axis
+						if (max_deaths < totalCount) {
+							max_deaths = totalCount;
+						}
+						
+						for (let i=0; i < totalCount; i++) {
+							// modify each death data with the day and date.
+							deaths[deathId].deathday = day;
+							deaths[deathId].deathdate = data[day].date;
+							
+							// Count the no of deaths on each death day.
+							if (deaths[deathId].gender == "male") {
+								maleCount++;
+							} else {
+								femaleCount++;
+							}
+							ageCount[deaths[deathId].age]++;
+							deathId++;
+						}
+						
+						days_of_deaths.push ({  // push data loaded from csv files to the required format
+							day: day,
+							deathdate: data[day].date,
+							total: totalCount,
+							male: maleCount,
+							female: femaleCount,
+							age: ageCount
+						});
+						
+					}
+
+					graph_x.domain([0, days_of_deaths.length-1])
+						.range([spacing, graph_width - spacing]);
+						
+					graph_y.domain([0, max_deaths])
+						.range([graph_height - spacing, spacing]);
+						
+					deathsMap(); // show deaths on map (circles)
+
+					deathsGraphLines(); // plot lines on graph
+					
+					deathsGraph(); // show deaths on graph
+					
+					showTotal(); // show total
+				});
+				
+			});
+		}
+
+		
+		function showPumps() { // Get pumps data from pumps.csv and display pumps on map
+			const pumpSize = 10;
+		
+			d3.csv("pumps.csv", function(data) {
+				for (let i=0; i < data.length; i++) {
+					pumps_data.push(
+						{x: data[i].x, y: data[i].y}
+					);
+				}
 				
 				map.selectAll('.pump_map')
 					.data(pumps_data)
