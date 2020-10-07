@@ -267,25 +267,20 @@
 						age: ageCount });}
 
 					graph_x.domain([0, days_of_deaths.length-1])
-						.range([spacing, graph_width - spacing]);
-						
+					.range([spacing, graph_width - spacing]);
 					graph_y.domain([0, max_deaths])
-						.range([graph_height - spacing, spacing]);
+					.range([graph_height - spacing, spacing]);
 						
 					deathsMap(); // show deaths on map (circles)
-
 					deathsGraphLines(); // plot lines on graph
-					
 					deathsGraph(); // show deaths on graph
-					
 					showTotal(); // show total
+					});
 				});
-				
-			});
-		}
+			}
 
-		
-		function showPumps() { // Get pumps data from pumps.csv and display pumps on map
+		// Get pumps data from pumps.csv and display pumps on map
+		function showPumps() { 
 			const pumpSize = 10;
 		
 			d3.csv("pumps.csv", function(data) {
@@ -330,35 +325,24 @@
 					.attr('y', function(d) { return d.y; })
 					.attr('font-size', function(d) { return d.fontsize; })
 					.text(function(d) { return d.text; })
-					.attr('transform', function(d) {
-						return 'rotate(' + d.angle + ',' +
-							d.x + ',' + d.y + ')';
-					});
-			});
-		}
+					.attr('transform', function(d) {return 'rotate(' + d.angle + ',' + d.x + ',' + d.y + ')';
+					}); }); }
 		
 		let lineFunction = d3.svg.line() // plot street lines using streets.json on map
 			.x(function(d) { return map_x_scale(d.x); })
 			.y(function(d) { return map_y_scale(d.y); })
 			.interpolate("linear");
-		
-		
-		d3.json("streets.json", function(data) {
+			d3.json("streets.json", function(data) {
 			streets_data = data;
-		
 			map_x_scale.domain([3,20]).range([0, map_width]);
 			map_y_scale.domain([3,20]).range([map_height, 0]);
-
+		for (let i=0; i < streets_data.length; i++) { map.append("path")
+			.attr("d", lineFunction(streets_data[i]))
+			.attr("class", "street_line");}
 			
-			for (let i=0; i < streets_data.length; i++) {
-				map.append("path")
-					.attr("d", lineFunction(streets_data[i]))
-					.attr("class", "street_line");
-			}
-			
-			showStreetNames(); // display street names
-			showPumps(); // display pumps
-			getDeaths(); // 
+			showStreetNames(); // First displayed street names
+			showPumps(); // Then displayed pumps
+			getDeaths(); // Then displayed deaths
 		});
 				
 	</script>
