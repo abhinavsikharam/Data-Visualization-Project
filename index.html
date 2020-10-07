@@ -102,9 +102,9 @@
 			.append("rect")
 			.attr("x", function(d) { return graph_x(d.day); })
 			.attr("y", function(d) { return graph_y(d.total); })
-			.attr("width", 3) // width of bar
+			.attr("width", 3)
 			.attr("height", function(d) { return graph_height - graph_y(d.total)-spacing; })
-			.attr("fill", "#90e0ef") // color of bar
+			.attr("fill", "#90e0ef")
 			let graphMalePathGenerator = d3.svg.line()
 				.x(function(d) { return graph_x(d.day); })
 				.y(function(d) { return graph_y(d.male); });
@@ -147,44 +147,29 @@
 				.on("mouseout", function(d) {map.selectAll(".show_death").attr("visibility","visible");})
 				.append("title")
 				.text(function(d) {return d.deathdate + ": " + d.total + (d.total==1 ? " death" : " deaths");});
-				
-			
-			let xAxis = d3.svg.axis()
+			let xAxis = d3.svg.axis() 
 				.scale(graph_x)
 				.orient('bottom')
-				.tickFormat(function(d) {
-					return days_of_deaths[d].deathdate;
-				});
-
+				.tickFormat(function(d) {return days_of_deaths[d].deathdate;});
 			let yAxis = d3.svg.axis()
 				.scale(graph_y)
 				.orient('left');
-
 			graph.append('g')
 				.attr('class', 'axis')
 				.attr('transform', 'translate(0,' + (graph_height - spacing) + ')')
 				.call(xAxis);
-
 			graph.append('g')
 				.attr('class', 'axis')
 				.attr('transform', 'translate(' + spacing + ',0)')
 				.call(yAxis);
-				
-			
 			let buttonLabelYAdjust = 5;
-			
-			// Total Deaths
 			graph.append('title')
-			.text("Days")
-				
+				.text("Days")
 				.attr("x", button_padding)
 				.attr("y", graph_height + button_padding)
 				.attr("width", button_width)
 				.attr("height", button_height)
 				.attr("fill", "black")
-			
-				
-			//  Gender Wise Male Key
 			graph.append('circle')
 				.attr('id', 'button_male')
 				.attr('class', 'graph_button graph_key_button male')
@@ -192,23 +177,18 @@
 				.attr("cy", button_padding)
 				.attr("r",10)
 				.attr("fill", "blue")
-				.on('click', function(d) {
-					male_fade = (male_fade == 1 ? .2 : 1);
-					d3.selectAll('.male').attr('fill-opacity', male_fade);
-					d3.selectAll('.male').attr('stroke-opacity', male_fade);
-				});
+				.on('click', function(d) {male_fade = (male_fade == 1 ? .2 : 1);
+				d3.selectAll('.male').attr('fill-opacity', male_fade);
+				d3.selectAll('.male').attr('stroke-opacity', male_fade);});
 			graph.append('text')
 				.attr('id', 'button_male_label')
 				.attr('class', 'label_graph_button graph_key_button')
 				.text('Male')
 				.attr('x', graph_width - (keyButtonWidth / 2 + button_padding))
-				.attr('y', button_padding + button_height / 12 + 
-					buttonLabelYAdjust)
+				.attr('y', button_padding + button_height / 12 + buttonLabelYAdjust)
 				.attr('text-anchor','middle')
 				.attr('fill', 'blue')
 				.style('pointer-events','none');
-				
-			//  Gender Wise Female Key
 			graph.append('circle')
 				.attr('id', 'button_female')
 				.attr('class', 'graph_button graph_key_button female')
@@ -216,23 +196,20 @@
 				.attr("cy", button_padding * 2 + button_height)
 				.attr("r",10)
 				.attr("fill", "#ef476f")
-				.on('click', function(d) {
-					female_fade = (female_fade == 1 ? .2 : 1);
-					d3.selectAll('.female').attr('fill-opacity', female_fade);
-					d3.selectAll('.female').attr('stroke-opacity', female_fade);
-				});
+				.on('click', function(d) {female_fade = (female_fade == 1 ? .2 : 1);
+				d3.selectAll('.female').attr('fill-opacity', female_fade);
+				d3.selectAll('.female').attr('stroke-opacity', female_fade);});
 			graph.append('text')
 				.attr('id', 'button_female_label')
 				.attr('class', 'label_graph_button graph_key_button')
 				.text('Female')
 				.attr('x', graph_width - (keyButtonWidth / 3 + button_padding))
-				.attr('y', button_padding  + button_height * 1.4+ 
-					buttonLabelYAdjust)
+				.attr('y', button_padding  + button_height * 1.4+ buttonLabelYAdjust)
 				.attr('text-anchor','middle')
 				.attr('fill', '#ef476f')
 				.style('pointer-events','none');
 
-			// By Age Key Buttons
+			
 			for (let i=0; i < ages_range.length; i++) {
 				graph.append('circle')
 					.attr('id', 'button_age' + i)
