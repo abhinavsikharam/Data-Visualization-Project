@@ -87,20 +87,15 @@
 			graph.select('#graphline_age' + i) .attr('stroke', ages_range[i].color);
 			graph.select('#button_age' + i) .attr('visibility','visible');
 			graph.select('#button_age_label' + i) .attr('visibility','visible');}}
-		function deathsMap() {
-			map.selectAll('.show_death').data(deaths).enter().append('circle')
-				.attr('id', function(d,i) { return "show_death" + i; })
-				.attr('class', function(d) { return "show_death " + d.gender + " " + "age" + d.age + " " + "deathday" + d.deathday;})
-				.attr('cx', function(d) { return map_x_scale(d.x); })
-				.attr('cy', function(d) { return map_y_scale(d.y); })
-				.attr('fill','none')
-				.append("title") // tooltip data hovered on circle
-				.text(function(d) {return d.gender + "\r\n" + "age group " + ages_range[d.age].label + "\r\n" + "expired " + d.deathdate;});}
-		function deathsGraphLines() {
-		
-
-			let graphTotalPathGenerator = d3.svg.line()
-			
+		function deathsMap() {map.selectAll('.show_death').data(deaths).enter().append('circle')
+			.attr('id', function(d,i) { return "show_death" + i; })
+			.attr('class', function(d) { return "show_death " + d.gender + " " + "age" + d.age + " " + "deathday" + d.deathday;})
+			.attr('cx', function(d) { return map_x_scale(d.x); })
+			.attr('cy', function(d) { return map_y_scale(d.y); })
+			.attr('fill','none')
+			.append("title") // tooltip data hovered on circle
+			.text(function(d) {return d.gender + "\r\n" + "age group " + ages_range[d.age].label + "\r\n" + "expired " + d.deathdate;});}
+		function deathsGraphLines() {let graphTotalPathGenerator = d3.svg.line()
 			graph.selectAll('#total_graph_line')
 			.data(days_of_deaths)
 			.enter()
@@ -108,58 +103,35 @@
 			.attr("x", function(d) { return graph_x(d.day); })
 			.attr("y", function(d) { return graph_y(d.total); })
 			.attr("width", 3) // width of bar
-			
 			.attr("height", function(d) { return graph_height - graph_y(d.total)-spacing; })
 			.attr("fill", "#90e0ef") // color of bar
-			
-	
-			// male line
 			let graphMalePathGenerator = d3.svg.line()
 				.x(function(d) { return graph_x(d.day); })
 				.y(function(d) { return graph_y(d.male); });
-				
 			graph.append('path')
 				.attr('id', 'graphline_male')
 				.attr('class', 'graph_line male')
 				.attr('d', graphMalePathGenerator(days_of_deaths));
-
-
-			// female line
 			let graphFemalePathGenerator = d3.svg.line()
 				.x(function(d) { return graph_x(d.day); })
 				.y(function(d) { return graph_y(d.female); });
-
 			graph.append('path')
 				.attr('id', 'graphline_female')
 				.attr('class', 'graph_line female')
 				.attr('d', graphFemalePathGenerator(days_of_deaths));
-
-			//ages lines
-			for (let i=0; i < ages_range.length; i++) {
-				let graphPathGenerator = d3.svg.line()
-					.x(function(d) { return graph_x(d.day); })
-					.y(function(d) { return graph_y(d.age[i]); });
-
-				graph.append('path')
-					.attr('id', 'graphline_age' + i)
-					.attr('class', 'graph_line age' + i)
-					.attr('d', graphPathGenerator(days_of_deaths));
-			}
-		}
-		
-		
-		function deathsGraph() { // hover bar logic
-
-		
-			let hoverbarWidth = graph_width / (days_of_deaths.length - 1);
-
+			for (let i=0; i < ages_range.length; i++) {let graphPathGenerator = d3.svg.line()
+				.x(function(d) { return graph_x(d.day); })
+				.y(function(d) { return graph_y(d.age[i]); });
+			graph.append('path')
+				.attr('id', 'graphline_age' + i)
+				.attr('class', 'graph_line age' + i)
+				.attr('d', graphPathGenerator(days_of_deaths));	}}
+		function deathsGraph() { let hoverbarWidth = graph_width / (days_of_deaths.length - 1);
 			graph.selectAll("rect.graph_hover")
 				.data(days_of_deaths)
 				.enter()
 				.append("rect")
-				.attr("x", function(d, i) {
-					return graph_x(i) - hoverbarWidth / 2;
-				})
+				.attr("x", function(d, i) {return graph_x(i) - hoverbarWidth / 2;})
 				.attr("y", spacing)
 				.attr('width', hoverbarWidth)
 				.attr("height", graph_height - spacing * 2)
@@ -169,21 +141,12 @@
 				.attr("stroke-width", "0")
 				.attr("id", function(d) { return d.deathdate; })
 				.attr("class", "graph_hover")
-				.on("mouseover", function(d) {
-					d3.selectAll('.show_death')
-						.filter(function(d2) {
-							return d2.deathday > d.day;
-						})
-						.attr('visibility','hidden');
-				})
-				.on("mouseout", function(d) {
-					map.selectAll(".show_death").attr("visibility","visible");
-				})
+				.on("mouseover", function(d) { d3.selectAll('.show_death')
+				.filter(function(d2) {return d2.deathday > d.day;})
+				.attr('visibility','hidden');})
+				.on("mouseout", function(d) {map.selectAll(".show_death").attr("visibility","visible");})
 				.append("title")
-				.text(function(d) {
-					return d.deathdate + ": " + d.total + 
-						(d.total==1 ? " death" : " deaths");
-				});
+				.text(function(d) {return d.deathdate + ": " + d.total + (d.total==1 ? " death" : " deaths");});
 				
 			
 			let xAxis = d3.svg.axis()
