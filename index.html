@@ -233,12 +233,10 @@
 			d3.csv("deaths_age_sex.csv", function(data) {
 			for (let i=0; i < data.length; i++) {
 			deaths.push(
-			{
-			x: data[i].x,
+			{x: data[i].x,
 			y: data[i].y,
 			age: +data[i].age,
-			gender: +data[i].gender==0 ? "male" : "female"
-			}
+			gender: +data[i].gender==0 ? "male" : "female"}
 		    );
 		}
 			d3.csv("deathdays.csv", function(data) {
@@ -280,55 +278,49 @@
 			}
 
 		// Get pumps data from pumps.csv and display pumps on map
-		function showPumps() { 
-			const pumpSize = 10;
-		
-			d3.csv("pumps.csv", function(data) {
-				for (let i=0; i < data.length; i++) {
-					pumps_data.push(
-						{x: data[i].x, y: data[i].y}
-					);
-				}
-				
-				map.selectAll('.pump_map')
-					.data(pumps_data)
-					.enter()
-					.append('rect')
-					.attr('class', 'pump_map')
-					.attr('width', pumpSize)
-					.attr('height', pumpSize)
-					.attr('x', function(d) { return map_x_scale(d.x) - pumpSize / 2; })
-					.attr('y', function(d) { return map_y_scale(d.y) - pumpSize / 2; })
-					
-			});
+		function showPumps() { const pumpSize = 10;
+		d3.csv("pumps.csv", function(data) {for (let i=0; i < data.length; i++) 
+		{ pumps_data.push(
+		{x: data[i].x, 
+		 y: data[i].y}
+		);
 		}
-		
-		
-		function showStreetNames() {     // Retrieve street names from csv file and plot on map
-			d3.csv("street_names.csv", function(data) {
-				for (let i=0; i < data.length; i++) {
-					street_names.push({
-						x: data[i].x,
-						y: data[i].y,
-						text: data[i].text,
-						fontsize: data[i].fontsize,
-						angle: data[i].angle
-					});
+		map.selectAll('.pump_map')
+		.data(pumps_data)
+		.enter()
+		.append('rect')
+		.attr('class', 'pump_map')
+		.attr('width', pumpSize)
+		.attr('height', pumpSize)
+		.attr('x', function(d) { return map_x_scale(d.x) - pumpSize / 2; })
+		.attr('y', function(d) { return map_y_scale(d.y) - pumpSize / 2; })
+		});
+		}
+		// Retrieve street names from csv file and plot on map
+		function showStreetNames() {     
+		d3.csv("street_names.csv", function(data) {
+		for (let i=0; i < data.length; i++) {
+		street_names.push({
+				x: data[i].x,
+				y: data[i].y,
+				text: data[i].text,
+				fontsize: data[i].fontsize,
+				angle: data[i].angle
+				});
 				}
-				
-				map.selectAll('.street_name')
-					.data(street_names)
-					.enter()
-					.append('text')
-					.attr('class', 'street_name')
-					.attr('x', function(d) { return d.x; })
-					.attr('y', function(d) { return d.y; })
-					.attr('font-size', function(d) { return d.fontsize; })
-					.text(function(d) { return d.text; })
-					.attr('transform', function(d) {return 'rotate(' + d.angle + ',' + d.x + ',' + d.y + ')';
-					}); }); }
-		
-		let lineFunction = d3.svg.line() // plot street lines using streets.json on map
+		map.selectAll('.street_name')
+		.data(street_names)
+		.enter()
+		.append('text')
+		.attr('class', 'street_name')
+		.attr('x', function(d) { return d.x; })
+		.attr('y', function(d) { return d.y; })
+		.attr('font-size', function(d) { return d.fontsize; })
+		.text(function(d) { return d.text; })
+		.attr('transform', function(d) {return 'rotate(' + d.angle + ',' + d.x + ',' + d.y + ')';
+		}); }); }
+		// plot street lines using streets.json on map
+		let lineFunction = d3.svg.line() 
 			.x(function(d) { return map_x_scale(d.x); })
 			.y(function(d) { return map_y_scale(d.y); })
 			.interpolate("linear");
